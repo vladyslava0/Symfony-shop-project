@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Catalog{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Item Catalog</h1>
+        <a href="{{ path('app_logout') }}" class="btn btn-outline-danger">Logout</a>
+        <a href="{{ path('app_cart') }}" class="btn btn-outline-primary">Cart</a>
+    </div>
+
+    {% if items is empty %}
+        <p>No items available.</p>
+    {% else %}
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>${{ item.price|number_format(2, '.', ',') }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>
+                            {% if item.quantity == 0 %}
+                                <button class="btn btn-danger btn-sm" disabled>Out of stock</button>
+                            {% elseif item.id in cartItems|keys %}
+                                <button class="btn btn-secondary btn-sm" disabled>See in Cart</button>
+                            {% else %}
+                                <a href="{{ path('cart_add', {id: item.id}) }}" class="btn btn-success btn-sm">+ Add to Cart</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}
