@@ -51,6 +51,11 @@ Twig templates for rendering pages:
 ```bash
    composer install
 ```
+Note: After running `composer install`, you also need to install the frontend assets for Symfony UX by executing:
+```bash
+   php bin/console importmap:install
+
+```
 3. Set up your database connection by filling in the DATABASE_URL variable in your .env, for example:
  ```bash
    DATABASE_URL="mysql://username:password@127.0.0.1:3306/db_name"
