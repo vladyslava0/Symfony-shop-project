@@ -13,7 +13,7 @@ class CatalogController extends AbstractController
     #[Route('/catalog', name: 'app_catalog')]
     public function index(ItemRepository $itemRepository, CartService $cartService): Response
     {
-        $items = $itemRepository->findAllItems();
+        $items = $itemRepository->findBy([], ['name' => 'ASC']);
         $cartItems = $cartService->getCart();
 
         return $this->render('catalog/index.html.twig', [

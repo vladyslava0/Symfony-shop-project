@@ -2,12 +2,10 @@
 
 namespace App\Controller;
 
-use App\Entity\Order;
-use App\Entity\OrderItem;
 use App\Service\CartService;
+use App\Service\OrderService;
 use App\Repository\ItemRepository;
 use App\Repository\OrderRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,9 +20,16 @@ class CartController extends AbstractController
         $items = [];
         $total = 0;
 
+        $itemIds = array_keys($cart);
+        $itemsDB = $itemRepository->findBy(['id' => $itemIds]);
+        $itemMap = [];
+        foreach ($itemsDB as $item) {
+            $itemMap[$item->getId()] = $item;
+        }
+
         foreach ($cart as $id => $qty) {
-            $item = $itemRepository->find($id);
-            if ($item) {
+            if (isset($itemMap[$id])) {
+                $item = $itemMap[$id];
                 $items[] = [
                     'id' => $item->getId(),
                     'name' => $item->getName(),
@@ -69,35 +74,14 @@ class CartController extends AbstractController
     }
 
     #[Route('/cart/checkout', name: 'cart_checkout')]
-    public function checkout(CartService $cartService, ItemRepository $itemRepository, EntityManagerInterface $entityManager): Response
+    public function checkout(CartService $cartService, OrderService $orderService): Response
     {
-        $user = $this->getUser();
         $cart = $cartService->getCart();
         if (empty($cart)) {
             return $this->redirectToRoute('app_cart');
         }
 
-        $order = new Order();
-        $order->setUser($user);
-        $order->setDate(new \DateTime());
-
-        foreach ($cart as $itemId => $qty) {
-            $item = $itemRepository->find($itemId);
-            if ($item && $item->getQuantity() >= $qty) {
-                $orderItem = new OrderItem();
-                $orderItem->setItem($item);
-                $orderItem->setQuantityOrdered($qty);
-                $orderItem->setPrice($item->getPrice());
-                $orderItem->setBelongToOrder($order);
-                $entityManager->persist($orderItem);
-
-                $item->setQuantity($item->getQuantity() - $qty);
-                $entityManager->persist($item);
-            }
-        }
-
-        $entityManager->persist($order);
-        $entityManager->flush();
+        $orderService->createOrderFromCart($cart, $this->getUser());
         $cartService->clearCart();
 
         return $this->redirectToRoute('app_cart');

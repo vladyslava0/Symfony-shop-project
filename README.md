@@ -29,6 +29,7 @@ Represent database tables:
 ### Services (`src/Service`)
 Contain business logic separated from controllers:
 - `CartService` – manages adding, updating, and removing items in the cart
+- `OrderService` – handles the creation of orders from cart data
 
 ### Templates (`templates/`)
 Twig templates for rendering pages:
